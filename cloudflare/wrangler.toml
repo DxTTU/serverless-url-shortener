@@ -1,0 +1,7 @@
+name = "snip-ly"
+main = "worker.js"
+compatibility_date = "2026-09-28"
+
+[[kv_namespaces]]
+binding = "URLS"
+# id = "PASTE_KV_NAMESPACE_ID_HERE"   # filled in after `wrangler kv:namespace create URLS`
