@@ -3,7 +3,7 @@
 A production-style URL shortener running **100% serverless**. Paste a long URL,
 get a short link with click tracking — zero servers, $0 when idle.
 
-🚀 **Live demo:** https://snip-ly.dhatrinathlade2006.workers.dev
+🚀 **Live demo:** https://snip-ly.sniplyapp.workers.dev
 
 ## How it works (live deployment)
 
