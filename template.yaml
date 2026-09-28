@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless URL shortener — Lambda + API Gateway (HTTP API) + DynamoDB
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 10
+    MemorySize: 128
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref UrlTable
+
+Resources:
+  UrlTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: url-mappings
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: code
+          AttributeType: S
+      KeySchema:
+        - AttributeName: code
+          KeyType: HASH
+
+  ShortenApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins: ["*"]
+        AllowMethods: ["GET", "POST"]
+        AllowHeaders: ["Content-Type"]
+
+  ShortenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: shorten.lambda_handler
+      Events:
+        Shorten:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ShortenApi
+            Path: /shorten
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UrlTable
+
+  RedirectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: redirect.lambda_handler
+      Events:
+        Redirect:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ShortenApi
+            Path: /{code}
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UrlTable
+
+Outputs:
+  ApiUrl:
+    Description: Base URL of the HTTP API
+    Value: !GetAtt ShortenApi.ApiEndpoint
+  TableName:
+    Description: DynamoDB table storing the mappings
+    Value: !Ref UrlTable
